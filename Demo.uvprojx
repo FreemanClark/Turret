@@ -390,9 +390,9 @@
               <FilePath>.\main.c</FilePath>
             </File>
             <File>
-              <FileName>fixed.s</FileName>
+              <FileName>try.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\fixed.s</FilePath>
+              <FilePath>.\try.s</FilePath>
             </File>
           </Files>
         </Group>

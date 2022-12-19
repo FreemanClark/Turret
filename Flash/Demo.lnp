@@ -1,6 +1,6 @@
 --cpu Cortex-M3
 ".\flash\main.o"
-".\flash\fixed.o"
+".\flash\try.o"
 ".\flash\glcd_fonts.o"
 ".\flash\glcd_mcb1700.o"
 ".\flash\ssp_lpc17xx.o"

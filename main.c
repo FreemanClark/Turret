@@ -29,13 +29,13 @@ char* stringmaker(int, int);
 //};
 
 int bearing = 0, elevation = 0; //bearing and elevation
-
+extern void motorstart(void);
 /*-----------------------------------------------------------------------------
   Main function
  *----------------------------------------------------------------------------*/
 int main (void) {
   char text_string[14] = "  000     000";
-	
+	motorsetup();
 	
 	GLCD_Initialize         ();           /* Initialize Graphical LCD           */
 	GLCD_ClearScreen        ();           /* Clear Graphical LCD                */
@@ -66,7 +66,8 @@ int main (void) {
 	int prev_elev = elevation;
   while (1) {				
 		/* Main loop         */
-		//set string to position
+		update_motor();
+		//set string to position, update screen
 		if(bearing != prev_brng || elevation != prev_elev) { //update brng and elevation
 			char* d_text = stringmaker(bearing, elevation);
 			int i; //this is GAY AS FUCK HOLY SHIT

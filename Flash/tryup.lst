@@ -1,0 +1,418 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             mycode, CODE, READONLY
+    2 00000000                 EXPORT           update_motor
+    3 00000000                 EXTERN           bearing[SIZE=4]
+    4 00000000                 ALIGN
+    5 00000000                 ENTRY
+    6 00000000         update_motor
+                               PROC
+    7 00000000         ;       //* Step C0 C1 C2 C3
+    8 00000000         ;// *    1       1  0  1  0
+    9 00000000         ;// *    2       0  1  1  0
+   10 00000000         ;// *    3       0  1  0  1
+   11 00000000         ;// *    4       1  0  0  1
+   12 00000000 4B2C            LDR              R3, =0x2009C034 ;R3 is the addr
+                                                            ess for FIO1PIN
+   13 00000002         
+   14 00000002         ;While 1.24 is on, register will be loaded to ___, and t
+                       hen we step through each step until it goes back to orig
+                       inal val
+   15 00000002         
+   16 00000002         
+   17 00000002 681A    loop    LDR              R2, [R3]    ; R2 is the value o
+                                                            f FIO1PIN (shows if
+                                                             pins are on or off
+                                                            )
+   18 00000004         
+   19 00000004         ; TODO: Determine if you should jump to up, down, left, 
+                       or right
+   20 00000004         ; based on the value in R2
+   21 00000004         
+   22 00000004 F412 0F00       tst              r2, #0x00800000
+   23 00000008 D009            BEQ              up
+   24 0000000A         
+   25 0000000A F012 7F00       tst              r2, #0x02000000
+   26 0000000E D024            BEQ              down
+   27 00000010         
+   28 00000010 F012 6F80       tst              r2, #0x04000000 ;hex value that
+                                                             is a 1 for 26
+   29 00000014 D040            BEQ              left
+   30 00000016         
+   31 00000016 F012 7F80       tst              r2, #0x01000000 ;hex value that
+                                                             is a 1 for 24
+   32 0000001A D03C            BEQ              right
+   33 0000001C         
+   34 0000001C         ;B loop   ; change to endofproc when not main fxn
+   35 0000001C E03D            B                endofproc
+   36 0000001E         up                                   ; TODO: Increment R
+                                                            0 and jump to wait
+   37 0000001E 4926            LDR              R1, =0x2009C014 ;FIO0PIN
+   38 00000020         ;set a 1 to 0.2 and 0.5
+   39 00000020 F04F 0218       mov              R2, #0x18
+   40 00000024 600A            str              R2, [R1]
+   41 00000026         ;store location of pos
+   42 00000026         ;LDR R6, =bearing
+   43 00000026         ;MOV R7, #60 ;stores degree pos in R7
+   44 00000026         ;STR R7, [R6]
+   45 00000026 F7FF FFFE       BL               waitHundredms
+   46 0000002A         
+   47 0000002A         
+   48 0000002A         ;set a 1 to 0.3 and 0.5
+
+
+
+ARM Macro Assembler    Page 2 
+
+
+   49 0000002A F04F 020C       mov              R2, #0x0C
+   50 0000002E 600A            str              R2, [R1]
+   51 00000030         ;store location of pos
+   52 00000030         ;  LDR R6, =bearing
+   53 00000030         ;  MOV R7, #45 ;stores degree pos in R7
+   54 00000030         ;  STR R7, [R6]
+   55 00000030 F7FF FFFE       BL               waitHundredms
+   56 00000034         
+   57 00000034         ;set a 1 to 0.3 and 0.4
+   58 00000034 F04F 0224       mov              R2, #0x24
+   59 00000038 600A            str              R2, [R1]
+   60 0000003A         ;store location of pos
+   61 0000003A         ;  LDR R6, =bearing
+   62 0000003A         ;  MOV R7, #30 ;stores degree pos in R7
+   63 0000003A         ;  ;STR R7, [R6]
+   64 0000003A F7FF FFFE       BL               waitHundredms
+   65 0000003E         
+   66 0000003E         ;Set a 1 to 0.2 and 0.4
+   67 0000003E F04F 0230       mov              R2, #0x30
+   68 00000042 600A            str              R2, [R1]
+   69 00000044         ;store location of pos
+   70 00000044 F8DF C074       LDR              R12, =bearing
+   71 00000048 F8DC 2000       LDR              R2, [R12]
+   72 0000004C F102 0201       ADD              R2, #1      ;stores degree pos 
+                                                            in R7
+   73 00000050 F8CC 2000       STR              R2, [R12]
+   74 00000054 F7FF FFFE       BL               waitHundredms
+   75 00000058 E7D3            B                loop
+   76 0000005A         
+   77 0000005A         down                                 ; TODO: Decrement R
+                                                            0 and jump to wait
+   78 0000005A 4917            LDR              R1, =0x2009C014 ;FIO0PIN
+   79 0000005C         ;Set a 1 to 0.2 and 0.4
+   80 0000005C F04F 0230       mov              R2, #0x30
+   81 00000060 6002            str              R2, [R0]
+   82 00000062         ;store location of pos
+   83 00000062         ;LDR R6, =bearing
+   84 00000062 F04F 070F       MOV              R7, #15     ;stores degree pos 
+                                                            in R7
+   85 00000066         ;STR R7, [R6]
+   86 00000066 F7FF FFFE       BL               waitHundredms
+   87 0000006A         
+   88 0000006A         ;set a 1 to 0.3 and 0.4
+   89 0000006A F04F 0224       mov              R2, #0x24
+   90 0000006E 6002            str              R2, [R0]
+   91 00000070         ;store location of pos
+   92 00000070         ;LDR R6, =bearing
+   93 00000070 F04F 071E       MOV              R7, #30     ;stores degree pos 
+                                                            in R7
+   94 00000074         ;STR R7, [R6]
+   95 00000074 F7FF FFFE       BL               waitHundredms
+   96 00000078         
+   97 00000078         ;set a 1 to 0.3 and 0.5
+   98 00000078 F04F 020C       mov              R2, #0x0C
+   99 0000007C 6002            str              R2, [R0]
+  100 0000007E         ;store location of pos
+  101 0000007E         ;LDR R6, =bearing
+  102 0000007E F04F 072D       MOV              R7, #45     ;stores degree pos 
+                                                            in R7
+
+
+
+ARM Macro Assembler    Page 3 
+
+
+  103 00000082         ;STR R7, [R6]
+  104 00000082 F7FF FFFE       BL               waitHundredms
+  105 00000086         
+  106 00000086         ;set a 1 to 0.2 and 0.5
+  107 00000086 F04F 0218       mov              R2, #0x18
+  108 0000008A 6002            str              R2, [R0]
+  109 0000008C         ;store location of pos
+  110 0000008C         ;LDR R6, =bearing
+  111 0000008C F04F 073C       MOV              R7, #60     ;stores degree pos 
+                                                            in R7
+  112 00000090         ;STR R7, [R6]
+  113 00000090 F7FF FFFE       BL               waitHundredms
+  114 00000094 E7B5            B                loop
+  115 00000096         
+  116 00000096         right
+  117 00000096 490A            LDR              R1, =0x2009C054 ;FIO2PIN
+  118 00000098         ;;set a 1 to 2.2 and 2.5
+  119 00000098         ;  mov R2, #0x18
+  120 00000098         ;  str R2, [R1]
+  121 00000098         ;  ;store location of pos
+  122 00000098         ;  ;LDR R6, =bearing
+  123 00000098         ;  ;MOV R7, #60 ;stores degree pos in R7
+  124 00000098         ;  ;STR R7, [R6]
+  125 00000098         ;  BL waitHundredms
+  126 00000098         ;  
+  127 00000098         ;  
+  128 00000098         ;  ;set a 1 to 2.3 and 2.5
+  129 00000098         ;  mov R2, #0x0C
+  130 00000098         ;  str R2, [R1]
+  131 00000098         ;  ;store location of pos
+  132 00000098         ;;  LDR R6, =bearing
+  133 00000098         ;;  MOV R7, #45 ;stores degree pos in R7
+  134 00000098         ;;  STR R7, [R6]
+  135 00000098         ;  BL waitHundredms
+  136 00000098         ;  
+  137 00000098         ;  ;set a 1 to 2.3 and 2.4
+  138 00000098         ;  mov R2, #0x24
+  139 00000098         ;  str R2, [R1]
+  140 00000098         ;  ;store location of pos
+  141 00000098         ;;  LDR R6, =bearing
+  142 00000098         ;;  MOV R7, #30 ;stores degree pos in R7
+  143 00000098         ;;  ;STR R7, [R6]
+  144 00000098         ;  BL waitHundredms
+  145 00000098         ;  
+  146 00000098         ;  ;Set a 1 to 2.2 and 2.4
+  147 00000098         ;  mov R2, #0x30
+  148 00000098         ;  str R2, [R1]
+  149 00000098         ;  ;store location of pos
+  150 00000098         ;  LDR R12, =bearing
+  151 00000098         ;  LDR R2, [R12]
+  152 00000098         ;  ADD R2, #1 ;stores degree pos in R7
+  153 00000098         ;  STR R2, [R12]
+  154 00000098         ;  BL waitHundredms
+  155 00000098         ;  B loop
+  156 00000098         
+  157 00000098         left
+  158 00000098 4909            LDR              R1, =0x2009C054 ;FIO2PIN
+  159 0000009A         ;;Set a 1 to 2.2 and 2.4
+  160 0000009A         ;  mov R2, #0x30
+
+
+
+ARM Macro Assembler    Page 4 
+
+
+  161 0000009A         ;  str R2, [R1]
+  162 0000009A         ;  ;store location of pos
+  163 0000009A         ;  ;LDR R6, =bearing
+  164 0000009A         ;  MOV R7, #15 ;stores degree pos in R7
+  165 0000009A         ;  ;STR R7, [R6]
+  166 0000009A         ;  BL waitHundredms
+  167 0000009A         ; 
+  168 0000009A         ;  ;set a 1 to 2.3 and 2.4
+  169 0000009A         ;  mov R2, #0x24
+  170 0000009A         ;  str R2, [R1]
+  171 0000009A         ;  ;store location of pos
+  172 0000009A         ;  ;LDR R6, =bearing
+  173 0000009A         ;  MOV R7, #30 ;stores degree pos in R7
+  174 0000009A         ;  ;STR R7, [R6]
+  175 0000009A         ;  BL waitHundredms
+  176 0000009A         ; 
+  177 0000009A         ;  ;set a 1 to 2.3 and 2.5
+  178 0000009A         ;  mov R2, #0x0C
+  179 0000009A         ;  str R2, [R1]
+  180 0000009A         ;  ;store location of pos
+  181 0000009A         ;  ;LDR R6, =bearing
+  182 0000009A         ;  MOV R7, #45 ;stores degree pos in R7
+  183 0000009A         ;  ;STR R7, [R6]
+  184 0000009A         ;  BL waitHundredms
+  185 0000009A         ; 
+  186 0000009A         ;  ;set a 1 to 2.2 and 2.5
+  187 0000009A         ;  mov R2, #0x18
+  188 0000009A         ;  str R2, [R1]
+  189 0000009A         ;  ;store location of pos
+  190 0000009A         ;  ;LDR R6, =bearing
+  191 0000009A         ;  MOV R7, #60 ;stores degree pos in R7
+  192 0000009A         ;  ;STR R7, [R6]
+  193 0000009A         ;  BL waitHundredms
+  194 0000009A         ;  B loop
+  195 0000009A         endofproc
+  196 0000009A                 ENDP
+  197 0000009A         
+  198 0000009A                 EXPORT           waitHundredms
+  199 0000009A         waitHundredms
+                               PROC
+  200 0000009A         ; TODO: Write a procedure that "waits" for 100ms by wast
+                       ing cycles
+  201 0000009A         ; See Lesson 9 on cycle counting and Reference D from th
+                       e website
+  202 0000009A 480A            ldr              r0, =70000
+  203 0000009C         loop1
+  204 0000009C F1A0 0001       SUB              R0, #1
+  205 000000A0 2800            CMP              R0, #0
+  206 000000A2 D1FB            BNE              loop1
+  207 000000A4         
+  208 000000A4 4770            BX               LR
+  209 000000A6                 ENDP
+  210 000000A6         
+  211 000000A6                 EXPORT           motorsetup
+  212 000000A6         motorsetup
+                               PROC
+  213 000000A6         ; sets 0x3C to direction registers for 0.2-5 and 2.2-5
+  214 000000A6         ;setup for left/right motor
+  215 000000A6 4808            LDR              R0, =0x2009C040 ;FIO2DIR
+
+
+
+ARM Macro Assembler    Page 5 
+
+
+  216 000000A8 F04F 023C       MOV              R2, #0x3C
+  217 000000AC 6002            STR              R2, [R0]
+  218 000000AE         ;setup for up/down motor
+  219 000000AE 4807            LDR              R0, =0x2009C000 ;FIO0DIR
+  220 000000B0 6002            STR              R2, [R0]
+  221 000000B2 4770            BX               LR
+  222 000000B4                 ENDP
+  223 000000B4                 END
+              2009C034 
+              2009C014 
+              00000000 
+              2009C054 
+              00011170 
+              2009C040 
+              2009C000 
+Command Line: --debug --xref --diag_suppress=9931,A1950W --cpu=Cortex-M3 --depe
+nd=.\flash\tryup.d -o.\flash\tryup.o -I.\RTE\Device\LPC1768 -I.\RTE\_LPC1768_Fl
+ash -IC:\Users\m241896\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Core\Inclu
+de -IC:\Users\m241896\AppData\Local\Arm\Packs\ARM\CMSIS\5.9.0\CMSIS\Driver\Incl
+ude -IC:\Users\m241896\AppData\Local\Arm\Packs\Keil\LPC1700_DFP\2.7.1\Boards\Ke
+il\MCB1700\Common -IC:\Users\m241896\AppData\Local\Arm\Packs\Keil\LPC1700_DFP\2
+.7.1\Device\Include -IC:\Users\m241896\AppData\Local\Arm\Packs\Keil\LPC1700_DFP
+\2.7.1\RTE_Driver -IC:\Users\m241896\AppData\Local\Arm\Packs\Keil\MDK-Middlewar
+e\7.16.0\Board --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1" --pr
+edefine="__UVISION_VERSION SETA 538" --predefine="_RTE_ SETA 1" --predefine="LP
+C175x_6x SETA 1" --predefine="_RTE_ SETA 1" --list=.\flash\tryup.lst tryup.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+down 0000005A
+
+Symbol: down
+   Definitions
+      At line 77 in file tryup.s
+   Uses
+      At line 26 in file tryup.s
+Comment: down used once
+endofproc 0000009A
+
+Symbol: endofproc
+   Definitions
+      At line 195 in file tryup.s
+   Uses
+      At line 35 in file tryup.s
+Comment: endofproc used once
+left 00000098
+
+Symbol: left
+   Definitions
+      At line 157 in file tryup.s
+   Uses
+      At line 29 in file tryup.s
+Comment: left used once
+loop 00000002
+
+Symbol: loop
+   Definitions
+      At line 17 in file tryup.s
+   Uses
+      At line 75 in file tryup.s
+      At line 114 in file tryup.s
+
+loop1 0000009C
+
+Symbol: loop1
+   Definitions
+      At line 203 in file tryup.s
+   Uses
+      At line 206 in file tryup.s
+Comment: loop1 used once
+motorsetup 000000A6
+
+Symbol: motorsetup
+   Definitions
+      At line 212 in file tryup.s
+   Uses
+      At line 211 in file tryup.s
+Comment: motorsetup used once
+mycode 00000000
+
+Symbol: mycode
+   Definitions
+      At line 1 in file tryup.s
+   Uses
+      None
+Comment: mycode unused
+right 00000096
+
+
+
+
+ARM Macro Assembler    Page 2 Alphabetic symbol ordering
+Relocatable symbols
+
+Symbol: right
+   Definitions
+      At line 116 in file tryup.s
+   Uses
+      At line 32 in file tryup.s
+Comment: right used once
+up 0000001E
+
+Symbol: up
+   Definitions
+      At line 36 in file tryup.s
+   Uses
+      At line 23 in file tryup.s
+Comment: up used once
+update_motor 00000000
+
+Symbol: update_motor
+   Definitions
+      At line 6 in file tryup.s
+   Uses
+      At line 2 in file tryup.s
+Comment: update_motor used once
+waitHundredms 0000009A
+
+Symbol: waitHundredms
+   Definitions
+      At line 199 in file tryup.s
+   Uses
+      At line 45 in file tryup.s
+      At line 55 in file tryup.s
+      At line 64 in file tryup.s
+      At line 74 in file tryup.s
+      At line 86 in file tryup.s
+      At line 95 in file tryup.s
+      At line 104 in file tryup.s
+      At line 113 in file tryup.s
+      At line 198 in file tryup.s
+
+11 symbols
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+External symbols
+
+bearing 00000000
+
+Symbol: bearing
+   Definitions
+      At line 3 in file tryup.s
+   Uses
+      At line 70 in file tryup.s
+Comment: bearing used once
+1 symbol
+349 symbols in table
